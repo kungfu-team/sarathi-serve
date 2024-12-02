@@ -311,8 +311,16 @@ def get_rope(
             head_size, rotary_dim, max_position, base, is_neox_style
         )
     else:
-        scaling_type = rope_scaling["type"]
-        scaling_factor = rope_scaling["factor"]
+        # hotfix
+        if "type" in rope_scaling:
+            scaling_type = rope_scaling["type"]
+        else:
+            scaling_type = "linear"
+        if "factor" in rope_scaling:
+            scaling_factor = rope_scaling["factor"]
+        else:
+            scaling_factor = 1.0
+
         if scaling_type == "linear":
             rotary_emb = LinearScalingRotaryEmbedding(
                 head_size, rotary_dim, max_position, base, is_neox_style, scaling_factor
