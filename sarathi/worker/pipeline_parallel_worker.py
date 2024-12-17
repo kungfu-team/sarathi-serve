@@ -4,6 +4,8 @@ from typing import Tuple
 
 import torch
 import torch.distributed
+
+# import torch.profiler as tprof
 import zmq
 
 from sarathi.core.datatypes.scheduler_output import SchedulerOutputs
@@ -53,6 +55,12 @@ class PipelineParallelWorker(BaseWorker):
 
         self.worker_ready_event.set()
 
+        # profile
+        # activities = [tprof.ProfilerActivity.CPU, tprof.ProfilerActivity.CUDA]
+        # with tprof.profile(activities=activities) as prof:
+        #     with tprof.record_function("model_inference"):
+
+        # for _ in range(500):
         while True:
             step_inputs = self.enqueue_socket.recv_pyobj()
 
@@ -73,6 +81,10 @@ class PipelineParallelWorker(BaseWorker):
                 self.output_socket.send_pyobj(output)
             elif self.is_first_pipeline_stage:
                 self.microbatch_socket.send_pyobj(None)
+
+        # profile
+        # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+        # prof.export_chrome_trace(f"trace_{self.rank}.json")
 
     @synchronized
     def get_model_parallel_ranks(self) -> Tuple[int, int]:
